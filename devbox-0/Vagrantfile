@@ -14,6 +14,13 @@ Vagrant.configure("2") do |config|
   # boxes at https://vagrantcloud.com/search.
   config.vm.box = "ubuntu/jammy64"
 
+
+  # Following four options are WIP
+  #config.ssh.username = "devbox-0"
+  #config.ssh.password = "devbox-0"
+  #config.ssh.dsa_authentication = false
+  #config.ssh.insert_key = false
+
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
   # `vagrant box outdated`. This is not recommended.
@@ -51,7 +58,7 @@ Vagrant.configure("2") do |config|
   #
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
-    vb.gui = true
+    # vb.gui = true
  
     # Customize the amount of memory on the VM:
     vb.memory = "2048"
@@ -63,19 +70,32 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "shell", inline: <<-SHELL
+
+  # enable-pass and create-user are WIP
+  config.vm.provision "enable-pass", type: "shell", run: "never", inline: <<-SHELL
+   sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+   sudo systemctl restart sshd.service
+  SHELL
+
+  config.vm.provision "create-user", type: "shell", run: "never", inline: <<-SHELL
+    sudo userdel -r devbox-0
+    sudo useradd -m devbox-0
+    sudo usermod -aG sudo devbox-0
+    echo devbox-0:devbox-0 | sudo chpasswd
+  SHELL
+
+  config.vm.provision "tools-0", type: "shell", inline: <<-SHELL
     sudo apt update
     sudo apt install -y net-tools vim curl git kdiff3 tree traceroute make dos2unix
-
   SHELL
+
+  config.vm.provision "docker" do |d|
+  end
 
   config.vm.provision "kubectl", type:"shell", inline: <<-SHELL
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
     sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
   SHELL
-
-  config.vm.provision "docker" do |d|
-  end
 
   config.vm.provision "kind", type:"shell", inline: <<-SHELL
     curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.18.0/kind-linux-amd64
