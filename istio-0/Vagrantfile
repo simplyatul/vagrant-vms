@@ -65,25 +65,22 @@ Vagrant.configure("2") do |config|
   # Ansible, Chef, Docker, Puppet and Salt are also available. Please see the
   # documentation for more information about their specific syntax and use.
 
-  config.vm.provision "tools-0", type: "shell", inline: <<-SHELL
-    sudo apt update
-    sudo apt install -y net-tools vim curl git kdiff3 tree traceroute make dos2unix bind9-dnsutils
-  SHELL
+  config.vm.provision "tools-0", type: "shell",
+    path: "https://raw.githubusercontent.com/simplyatul/vagrant-vms/main/tools-0-install.sh"
 
   config.vm.provision "docker" do |d|
   end
 
-  config.vm.provision "kubectl", type:"shell", inline: <<-SHELL
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-    sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-    kubectl completion bash | sudo tee /etc/bash_completion.d/kubectl > /dev/null
-    sudo chmod a+r /etc/bash_completion.d/kubectl
+  config.vm.provision "setaliases", type:"shell", inline: <<-SHELL
+    curl -LO "https://raw.githubusercontent.com/simplyatul/bin/master/setaliases.sh"
+    # following line not working...ToDo - Debug
+    echo "source ~/setaliases.sh" >> ~/.bashrc
   SHELL
 
-  config.vm.provision "kind", type:"shell", inline: <<-SHELL
-    curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.18.0/kind-linux-amd64
-    chmod +x ./kind
-    sudo mv ./kind /usr/local/bin/kind
-  SHELL
+  config.vm.provision "kubectl", type:"shell",
+    path: "https://raw.githubusercontent.com/simplyatul/vagrant-vms/main/kubectl-install.sh"
+
+  config.vm.provision "kind", type:"shell",
+    path: "https://raw.githubusercontent.com/simplyatul/vagrant-vms/main/kind-install.sh"
 
 end
