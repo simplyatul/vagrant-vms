@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+ config.vm.box = "ubuntu/jammy64"
+ config.vm.box_version = "20241002.0.0"
+
+ config.vm.synced_folder "./shared-with-vm", "/shared-with-host"
+
+ config.vm.provider "virtualbox" do |vb|
+    # Display the VirtualBox GUI when booting the machine
+    # vb.gui = true
+ 
+    # Customize the amount of memory on the VM:
+    vb.memory = "2048"
+    vb.cpus = 2
+    vb.name = "eBPF"
+  end
+
+ config.vm.provision "setaliases", type:"shell", inline: <<-SHELL
+   curl -LO "https://raw.githubusercontent.com/simplyatul/bin/master/setaliases.sh"
+   # following line not working...So execute it once logged into VM
+   # echo "source ~/setaliases.sh" >> ~/.bashrc
+ SHELL
+
+end
