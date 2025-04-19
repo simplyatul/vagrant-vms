@@ -1,0 +1,9 @@
+# kind create cluster --config=kind-config.yaml --name cc0
+# kind delete cluster --name cc0
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+- role: control-plane
+- role: worker
+networking:
+  disableDefaultCNI: true
